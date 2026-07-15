@@ -1,0 +1,384 @@
+<ui:FluentWindow x:Class="WxlConverterUi.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WxlConverterUi"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="WarcraftXL Cold Converter" Height="900" Width="920" MinHeight="600" MinWidth="820"
+        WindowStartupLocation="CenterScreen"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Icon="app.ico">
+    <Window.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="SectionSubtitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Margin" Value="0,1,0,0" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        </Style>
+        <Style x:Key="SectionIcon" TargetType="ui:SymbolIcon">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="SectionCard" TargetType="ui:Card" BasedOn="{StaticResource {x:Type ui:Card}}">
+            <Setter Property="Margin" Value="0,0,0,16" />
+            <Setter Property="Padding" Value="20,18" />
+        </Style>
+        <!-- Sub-group label inside an options grid, e.g. "Geometry / Holes" -->
+        <Style x:Key="GroupLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="OptionGroupBorder" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="Width" Value="266" />
+        </Style>
+        <!-- BasedOn is required here: a keyed Style with an explicit TargetType does NOT inherit the
+             implicit wpf-ui default style for that type unless told to; without it this style silently
+             replaces the themed ToggleSwitch template with the unstyled system default. -->
+        <Style x:Key="OptionToggle" TargetType="ui:ToggleSwitch" BasedOn="{StaticResource {x:Type ui:ToggleSwitch}}">
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="FontSize" Value="12.5" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20,0,20,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="WarcraftXL Cold Converter" Margin="-20,0,-20,0" />
+
+        <!-- Header banner with logo, title and tagline above the options list. -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,16">
+            <Image Source="Assets/wxl-logo.png" Width="52" Height="52" Margin="0,0,12,0"
+                   VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="WarcraftXL Cold Converter" FontSize="20" FontWeight="SemiBold" />
+                <TextBlock Text="Pre-bakes M2, WMO, ADT and BLP assets for the TLK 3.3.5a client"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,2,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,14,0" Margin="0,0,0,16">
+            <StackPanel>
+
+                <!-- ================= GENERAL ================= -->
+                <ui:Card Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Folder24" Style="{StaticResource SectionIcon}" />
+                            <TextBlock Text="Input &amp; Output" Style="{StaticResource SectionTitle}" />
+                        </StackPanel>
+
+                        <TextBlock Text="Input (file or folder)" Style="{StaticResource FieldLabel}" />
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="InputBox" Grid.Column="0" Margin="0,0,8,0" />
+                            <ui:Button Grid.Column="1" Content="File..." Margin="0,0,4,0" Click="BrowseInputFile_Click" />
+                            <ui:Button Grid.Column="2" Content="Folder..." Click="BrowseInputFolder_Click" />
+                        </Grid>
+
+                        <TextBlock Text="Output (empty = sibling &quot;input_converted&quot;)" Style="{StaticResource FieldLabel}" />
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="OutputBox" Grid.Column="0" Margin="0,0,8,0" />
+                            <ui:Button Grid.Column="1" Content="Folder..." Click="BrowseOutputFolder_Click" />
+                        </Grid>
+
+                        <TextBlock Text="Listfile (empty = listfile.csv next to the engine)" Style="{StaticResource FieldLabel}" />
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="ListfileBox" Grid.Column="0" Margin="0,0,8,0" />
+                            <ui:Button Grid.Column="1" Content="File..." Click="BrowseListfile_Click" />
+                        </Grid>
+
+                        <TextBlock Text="Threads (&quot;auto&quot; or a number)" Style="{StaticResource FieldLabel}" />
+                        <ui:TextBox x:Name="ThreadsBox" HorizontalAlignment="Left" Width="140" />
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- ================= FAMILIES ================= -->
+                <ui:Card Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Apps24" Style="{StaticResource SectionIcon}" />
+                            <TextBlock Text="Families" Style="{StaticResource SectionTitle}" />
+                        </StackPanel>
+                        <UniformGrid Columns="4" Rows="1">
+                            <ui:ToggleSwitch x:Name="M2Check" Content="M2" IsChecked="True"
+                                              Checked="FamilyToggle_Changed" Unchecked="FamilyToggle_Changed" />
+                            <ui:ToggleSwitch x:Name="WmoCheck" Content="WMO" IsChecked="True"
+                                              Checked="FamilyToggle_Changed" Unchecked="FamilyToggle_Changed" />
+                            <ui:ToggleSwitch x:Name="AdtCheck" Content="ADT" IsChecked="True"
+                                              Checked="FamilyToggle_Changed" Unchecked="FamilyToggle_Changed" />
+                            <ui:ToggleSwitch x:Name="BlpCheck" Content="BLP" IsChecked="True"
+                                              Checked="FamilyToggle_Changed" Unchecked="FamilyToggle_Changed" />
+                        </UniformGrid>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- ================= ADT ================= -->
+                <ui:Card x:Name="AdtCard" Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Map24" Style="{StaticResource SectionIcon}" />
+                            <StackPanel>
+                                <TextBlock Text="ADT" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="Terrain tiles -- geometry, water, texturing, placements" Style="{StaticResource SectionSubtitle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="GEOMETRY / HOLES" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtHighResHolesToggle" Content="High res holes" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep the 8x8 hi-res hole mask for the hi-res-hole engine patch (off = fall back to the 4x4 mask)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="WATER" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtFixWaterToggle" Content="Override water" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Translate MH2O liquid types/heights onto the client contract (off = drop water)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="OBJECTS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtShowDoodadsToggle" Content="Show M2" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Emit MDDF (M2 doodad placements)" />
+                                    <ui:ToggleSwitch x:Name="AdtShowWmoObjectsToggle" Content="Show WMO" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Emit MODF (WMO placements)" />
+                                    <ui:ToggleSwitch x:Name="AdtPreserveWmoScaleToggle" Content="Preserve WMO Scale" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep MODF's per-instance scale (off = force x1.0)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="TEXTURING" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtPackExtraTextureLayersToggle" Content="Clamp Texture Layers" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Pack MCLY layers 5-8 into the trailing ATL2 table (off = drop them)" />
+                                    <ui:ToggleSwitch x:Name="AdtUvScaleTableToggle" Content="UV-scale table (ATSC)" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Emit the trailing per-texture UV-scale table" />
+                                    <ui:ToggleSwitch x:Name="AdtHeightBlendTableToggle" Content="Height-blend table (ATHB)" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Emit the trailing per-texture height-blend table" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="IDENTIFIED" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtPreserveAreaIdToggle" Content="Preserve AreaID" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep each MCNK's areaId (off = zero it)" />
+                                    <ui:ToggleSwitch x:Name="AdtPreserveGroundEffectIdToggle" Content="Preserve GroundEffectID" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep each texture layer's ground-effect id (off = zero it)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="COMPANION FILES" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="AdtFixWdtBigAlphaToggle" Content="Fix WDT (bigalpha)" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Clear a WDT's MPHD big_alpha bit when its tiles are served merged" />
+                                    <ui:ToggleSwitch x:Name="AdtConvertWdlToggle" Content="Convert WDL" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Reshape .wdl low-detail map indices onto the client layout" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- ================= WMO ================= -->
+                <ui:Card x:Name="WmoCard" Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Building24" Style="{StaticResource SectionIcon}" />
+                            <StackPanel>
+                                <TextBlock Text="WMO" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="Map objects -- structures, doodads, collision, lighting" Style="{StaticResource SectionSubtitle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="OBJECTS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="WmoShowDoodadsToggle" Content="Show doodads" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Rebuild and emit doodad placements (MODN/MODD)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="GEOMETRY" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="WmoIncludePortalsToggle" Content="Include portals" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep portal/culling data (MOPV/MOPT/MOPR/MOVV/MOVB)" />
+                                    <ui:ToggleSwitch x:Name="WmoIncludeCollisionToggle" Content="Include collision" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep BSP collision data (MOBN/MOBR)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="LIGHTING / WATER" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="WmoIncludeLightsToggle" Content="Include lights" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep point/spot lights (MOLT)" />
+                                    <ui:ToggleSwitch x:Name="WmoIncludeLiquidToggle" Content="Include liquid" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Keep group liquid data (MLIQ)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="VERTEX COLORS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="WmoNeutralizeVertexColorsToggle" Content="Neutralize over-bright colors" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Clamp near-white MOCV entries to black so they shade from ambient light" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- ================= M2 / ANIM ================= -->
+                <ui:Card x:Name="M2Card" Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Run24" Style="{StaticResource SectionIcon}" />
+                            <StackPanel>
+                                <TextBlock Text="M2 / Anim" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="Models -- animation, effects, texture and rig fixups" Style="{StaticResource SectionSubtitle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="ANIMATION" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="M2AnimationFixToggle" Content="Fix animation ids" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Remap sequence ids the client can't resolve (&gt;505) to a safe fallback" />
+                                    <ui:ToggleSwitch x:Name="M2UnwrapAnimToggle" Content="Unwrap external .anim" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Strip the AFM2 wrapper from external .anim siblings" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="EFFECTS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="M2RibbonCompactToggle" Content="Downport ribbons" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Downport ribbon emitter records onto the client stride" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="FIXUPS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="M2ShadowSwingFixToggle" Content="Shadow-swing fix" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Zero the bone lookup on static-prop shadow-swing rigs (billboard fix)" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- ================= BLP ================= -->
+                <ui:Card x:Name="BlpCard" Style="{StaticResource SectionCard}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="ImageMultiple24" Style="{StaticResource SectionIcon}" />
+                            <StackPanel>
+                                <TextBlock Text="BLP" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="Textures -- compression and size caps" Style="{StaticResource SectionSubtitle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="COMPRESSION" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="BlpTranscodeToDxt5Toggle" Content="Transcode to DXT5" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Re-encode uncompressed-BGRA sources to DXT5 (off = passthrough)" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource OptionGroupBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="SIZE CAPS" Style="{StaticResource GroupLabel}" />
+                                    <ui:ToggleSwitch x:Name="BlpExemptSideMapsToggle" Content="Exempt _h/_s side-maps" Style="{StaticResource OptionToggle}"
+                                                      ToolTip="Height/spec side-maps always use the default max edge, ignoring per-folder caps" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+
+                        <TextBlock Text="Default max edge" Style="{StaticResource FieldLabel}" Margin="0,8,0,6" />
+                        <ui:TextBox x:Name="BlpDefaultMaxEdgeBox" HorizontalAlignment="Left" Width="140" Margin="0,0,0,16" />
+
+                        <TextBlock Text="Per-folder-prefix caps (longest prefix wins)" Style="{StaticResource FieldLabel}" />
+                        <ItemsControl x:Name="PathCapsList" Margin="0,0,0,10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="90" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <ui:TextBox Grid.Column="0" Margin="0,0,6,0" PlaceholderText="folder prefix"
+                                                    Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}" />
+                                        <ui:TextBox Grid.Column="1" Margin="0,0,6,0" PlaceholderText="max edge"
+                                                    Text="{Binding MaxEdge, UpdateSourceTrigger=PropertyChanged}" />
+                                        <ui:Button Grid.Column="2" Icon="{ui:SymbolIcon Delete24}"
+                                                   Click="RemovePathCap_Click" Tag="{Binding}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ui:Button Content="Add row" Icon="{ui:SymbolIcon Add24}" Click="AddPathCap_Click" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </ui:Card>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                <ProgressBar x:Name="ConvertProgress" Height="6" Minimum="0" Maximum="100" Value="0" />
+                <TextBlock x:Name="StatusText" Text="Idle" Margin="0,6,0,0"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12" />
+            </StackPanel>
+
+            <ui:Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" Margin="0,0,8,0"
+                       IsEnabled="False" Click="Cancel_Click" />
+            <ui:Button x:Name="ConvertButton" Grid.Column="2" Content="Convert" Icon="{ui:SymbolIcon PlayCircle24}"
+                       Appearance="Primary" Click="Convert_Click" />
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

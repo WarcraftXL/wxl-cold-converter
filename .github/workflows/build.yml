@@ -1,0 +1,57 @@
+name: Build
+
+# Sanity check on push/PR: syncs shared sources from wxl-modern-assets/wxl-modern-adt, builds both
+# architectures. No publish/package -- that's release.yml, triggered by a version tag.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: WarcraftXL/wxl-modern-assets
+          path: _wxl-modern-assets
+
+      - uses: actions/checkout@v4
+        with:
+          repository: WarcraftXL/wxl-modern-adt
+          path: _wxl-modern-adt
+
+      - name: Sync shared sources
+        shell: pwsh
+        run: >
+          ./.github/scripts/sync-shared-sources.ps1
+          -ModernAssetsPath "${{ github.workspace }}\_wxl-modern-assets"
+          -ModernAdtPath "${{ github.workspace }}\_wxl-modern-adt"
+          -WxlConverterPath "${{ github.workspace }}\converter"
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Build wxl-converter.dll
+        shell: pwsh
+        run: ./converter/build.ps1 -Arch ${{ matrix.arch }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build GUI
+        shell: pwsh
+        run: >
+          dotnet build . -c Release
+          -p:PlatformTarget=${{ matrix.arch }}
+          -p:WxlConverterDllPath="converter\$(if ('${{ matrix.arch }}' -eq 'x64') { 'build' } else { 'build-x86' })\Release\wxl-converter.dll"

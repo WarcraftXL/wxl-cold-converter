@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- wxl-converter.dll is native, never AnyCPU (P/Invoked): pin the host process to match.
+         Defaults to x64 for local dev (matches converter/build.ps1's default output); CI overrides
+         with -p:PlatformTarget=x86 for the x86 leg of the release matrix. -->
+    <PlatformTarget Condition="'$(PlatformTarget)'==''">x64</PlatformTarget>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <!-- Drives the actual output filename (WarcraftXL-Cold-Converter.exe/.dll), not just metadata. -->
+    <AssemblyName>WarcraftXL-Cold-Converter</AssemblyName>
+    <AssemblyTitle>WarcraftXL Cold Converter</AssemblyTitle>
+    <Product>WarcraftXL Cold Converter</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="app.ico" />
+    <Resource Include="Assets\wxl-logo.png" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- The engine always ships next to this exe (see Services/NativeInterop.cs): pull the latest
+         build from the converter/ subproject rather than requiring a manual copy step.
+         Defaults to the x64 build.ps1 output for local dev; CI overrides with -p:WxlConverterDllPath=...
+         to pick up the matching architecture's DLL for each leg of the release matrix. -->
+    <WxlConverterDllPath Condition="'$(WxlConverterDllPath)'==''">converter\build\Release\wxl-converter.dll</WxlConverterDllPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(WxlConverterDllPath)" Link="wxl-converter.dll"
+          Condition="Exists('$(WxlConverterDllPath)')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

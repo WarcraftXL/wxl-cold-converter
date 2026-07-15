@@ -1,0 +1,102 @@
+name: Release
+
+# Tag-triggered: syncs shared sources from wxl-modern-assets/wxl-modern-adt, builds+publishes both
+# architectures self-contained, zips each with the DLL and the latest community listfile, and
+# publishes a GitHub Release. Trigger: git tag v1.0.0 && git push origin v1.0.0
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+env:
+  LISTFILE_URL: https://github.com/wowdev/wow-listfile/releases/latest/download/community-listfile.csv
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            rid: win-x64
+            build_dir: build
+          - arch: x86
+            rid: win-x86
+            build_dir: build-x86
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: WarcraftXL/wxl-modern-assets
+          path: _wxl-modern-assets
+
+      - uses: actions/checkout@v4
+        with:
+          repository: WarcraftXL/wxl-modern-adt
+          path: _wxl-modern-adt
+
+      - name: Sync shared sources
+        shell: pwsh
+        run: >
+          ./.github/scripts/sync-shared-sources.ps1
+          -ModernAssetsPath "${{ github.workspace }}\_wxl-modern-assets"
+          -ModernAdtPath "${{ github.workspace }}\_wxl-modern-adt"
+          -WxlConverterPath "${{ github.workspace }}\converter"
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Build wxl-converter.dll
+        shell: pwsh
+        run: ./converter/build.ps1 -Arch ${{ matrix.arch }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish GUI (self-contained)
+        shell: pwsh
+        run: >
+          dotnet publish . -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -p:PlatformTarget=${{ matrix.arch }}
+          -p:WxlConverterDllPath="${{ github.workspace }}\converter\${{ matrix.build_dir }}\Release\wxl-converter.dll"
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o "${{ github.workspace }}\publish\${{ matrix.arch }}"
+
+      - name: Zip with listfile
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri $env:LISTFILE_URL -OutFile "${{ github.workspace }}\publish\${{ matrix.arch }}\listfile.csv"
+          Compress-Archive -Path "${{ github.workspace }}\publish\${{ matrix.arch }}\*" -DestinationPath "${{ github.workspace }}\wxl-cold-converter-${{ matrix.arch }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wxl-cold-converter-${{ matrix.arch }}
+          path: wxl-cold-converter-${{ matrix.arch }}.zip
+
+  release:
+    needs: build
+    # A manual workflow_dispatch run has no tag for softprops/action-gh-release to attach files to
+    # (it would fail with "requires a tag") -- only build+publish+zip run then, no Release is made.
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/wxl-cold-converter-x64/wxl-cold-converter-x64.zip
+            artifacts/wxl-cold-converter-x86/wxl-cold-converter-x86.zip
+          generate_release_notes: true
