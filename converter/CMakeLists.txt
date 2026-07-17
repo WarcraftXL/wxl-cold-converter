@@ -8,6 +8,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(wxl-converter LANGUAGES CXX)
 
+# Static CRT: the DLL is P/Invoked on user machines that have no reason to carry the toolset's
+# brand-new VC++ redistributable; a dynamic CRT turns a missing/stale redist into a load failure.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

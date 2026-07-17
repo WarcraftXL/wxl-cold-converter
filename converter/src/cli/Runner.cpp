@@ -18,6 +18,7 @@
 #include "FileType.hpp"
 #include "Progress.hpp"
 #include "api/Api.hpp"
+#include "common/WxlTag.hpp"
 #include "core/Cancel.hpp"
 #include "core/Listfile.hpp"
 #include "core/Logger.hpp"
@@ -155,7 +156,14 @@ namespace wxl::converter::cli
                 std::span<const uint8_t> skelSpan;
                 if (fs::exists(skelPath) && ReadFile(skelPath, skelBytes)) skelSpan = skelBytes;
 
-                if (m2::ConvertModel(raw, skelSpan, listfile, converted)) { ++c.m2Reshaped; }
+                if (m2::ConvertModel(raw, skelSpan, listfile, converted))
+                {
+                    // Discriminator for the client DLL: reshaped output carries the WXLC trailer so the
+                    // modern draw-time pipelines scope to it; passthrough files stay untagged and take
+                    // the stock path end to end.
+                    common::tag::Append(converted, common::tag::kFlagConverted);
+                    ++c.m2Reshaped;
+                }
                 else { converted = std::move(raw); ++c.m2Passthrough; }
             }
             else if (kind == ItemKind::M2Anim)
